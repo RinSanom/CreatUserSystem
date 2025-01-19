@@ -2,11 +2,15 @@ package createUserManagement.controller;
 
 import createUserManagement.model.User;
 import createUserManagement.service.ServiceUser;
+import org.nocrala.tools.texttablefmt.BorderStyle;
+import org.nocrala.tools.texttablefmt.CellStyle;
+import org.nocrala.tools.texttablefmt.ShownBorders;
+import org.nocrala.tools.texttablefmt.Table;
 
+import javax.management.ConstructorParameters;
 import java.util.Scanner;
 import java.util.UUID;
-
-public class UserController {
+public final class UserController {
     private ServiceUser service;
 
     public UserController(ServiceUser service) {
@@ -54,6 +58,30 @@ public class UserController {
         System.out.println("Enter UUID for search : ");
         String uuid = scanner.nextLine();
         User user = service.searchUser(uuid);
+        if(user == null ){
+            System.out.println("User With UUID [ "+uuid+"] Not Found");
+            return;
+        }
+        String[] headers = {"ID", "UUID", "Name", "Email", "Active"};
+        String[] userData = {
+                String.valueOf(user.getId()),
+                user.getUuid(),
+                user.getName(),
+                user.getEmail(),
+                user.isDeleted() ? "No" : "Yes"
+        };
+        Table table = new Table(headers.length, BorderStyle.UNICODE_BOX_DOUBLE_BORDER, ShownBorders.ALL);
+        for (String header : headers) {
+            table.addCell(header, new CellStyle(CellStyle.HorizontalAlign.center));
+        }
+
+        // Add user data with center alignment
+        for (String data : userData) {
+            table.addCell(data, new CellStyle(CellStyle.HorizontalAlign.center));
+        }
+
+
+        System.out.println(table.render());
     }
     public void updateUser() {
         Scanner scanner = new Scanner(System.in);

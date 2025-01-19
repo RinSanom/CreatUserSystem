@@ -1,5 +1,6 @@
 package createUserManagement.service;
 
+import createUserManagement.controller.UserController;
 import createUserManagement.model.User;
 import createUserManagement.repository.UserRepository;
 import org.nocrala.tools.texttablefmt.BorderStyle;
@@ -7,8 +8,13 @@ import org.nocrala.tools.texttablefmt.CellStyle;
 import org.nocrala.tools.texttablefmt.ShownBorders;
 import org.nocrala.tools.texttablefmt.Table;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 public class ServiceUser {
     private UserRepository repository;
+    private static final String TELEGRAM_API_URL = "https://api.telegram.org/bot7379508041:AAHVnaE9M1spEW6sY25jBTyG1cy1mxjrgBQ/sendMessage";
+    private static final String CHAT_ID = "1880202595";
     public ServiceUser(UserRepository repository) {
         this.repository = repository;
     }
@@ -18,11 +24,24 @@ public class ServiceUser {
         sendTelegram(user);
         return user;
     }
-    public void sendTelegram(User user){
-        System.out.println("New User Created[ "+user.getName());
+    public void sendTelegram(User user) {
+        String message = "New User Created: " + user.getName();
+        try {
+            URL url = new URL(TELEGRAM_API_URL + "?chat_id=" + CHAT_ID + "&text=" + message);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoOutput(true);
+            connection.connect();
+            int responseCode = connection.getResponseCode();
+            System.out.println("Telegram response code: " + responseCode);
+            connection.disconnect();
+            System.out.println("Notification sent to Telegram bot!");
+        } catch (Exception e) {
+            System.out.println("Error sending message to Telegram: " + e.getMessage());
+        }
     }
     public User searchUser(String uuid){
-        return repository.findUserByUUID(uuid);
+         return repository.findUserByUUID(uuid);
     }
     public boolean updateUser(String uuid, String name, String email, boolean isDeleted ){
         User user = repository.findUserByUUID(uuid);
@@ -52,7 +71,7 @@ public class ServiceUser {
             table.setColumnWidth( i , 20 , 50 );
         }
         for (User user : repository.getAllUsers()) {
-            if (!user.isDeleted()) { // Display only active (non-deleted) users
+            if (!user.isDeleted()) {
                 table.addCell(String.valueOf(user.getId()));
                 table.addCell(user.getUuid());
                 table.addCell(user.getName());

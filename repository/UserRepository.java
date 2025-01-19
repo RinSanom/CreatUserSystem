@@ -11,7 +11,11 @@ public class UserRepository {
             users.add(user);
         }
         public User findUserByUUID(String uuid){
-             users.stream().filter(user -> user.getUuid().equals(uuid)).findFirst().orElse(null);
+            for (User user : users) {
+                if (user.getUuid().equals(uuid)) {
+                    return user;
+                }
+            }
             return null;
         }
     public List<User> getAllUsers() {
